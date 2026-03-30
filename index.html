@@ -1,177 +1,80 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checklist traitement yeux</title>
-  <style>
-    :root{--bg:#f8fafc;--card:#fff;--muted:#64748b;--text:#0f172a;--line:#e2e8f0;--accent:#111827}
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:20px;display:grid;grid-template-columns:340px 1fr;gap:20px}
-    .card{background:var(--card);border-radius:24px;padding:20px;box-shadow:0 2px 12px rgba(15,23,42,.06)}
-    h1,h2,h3,p{margin:0} .muted{color:var(--muted)} .mt8{margin-top:8px} .mt12{margin-top:12px} .mt16{margin-top:16px}
-    .badge{display:inline-block;padding:6px 12px;border-radius:999px;background:#eef2ff;font-size:14px}
-    .btn{border:none;border-radius:16px;padding:12px 14px;font-weight:600;cursor:pointer;background:var(--accent);color:white;width:100%}
-    .btn.secondary{background:white;color:var(--text);border:1px solid var(--line)}
-    .item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);padding:12px;border-radius:18px;background:white}
-    .item.due{outline:2px solid #cbd5e1} .item.done{background:#f8fafc}
-    .section{display:grid;gap:12px} .stack{display:grid;gap:10px} .small{font-size:14px} .time{font-weight:700}
-    .toggle{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:18px;padding:12px}
-    .switch{position:relative;width:56px;height:32px;background:#cbd5e1;border-radius:999px;cursor:pointer}.switch::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;background:#fff;border-radius:50%;transition:.2s}.switch.on{background:#111827}.switch.on::after{transform:translateX(24px)}
-    .row{display:flex;justify-content:space-between;align-items:start;gap:12px} .hint{padding:12px;border-radius:18px;background:#f1f5f9} .checkbox{width:20px;height:20px}
-    @media (max-width: 900px){.wrap{grid-template-columns:1fr}}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Checklist traitement yeux</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f8fafc;color:#0f172a}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.card{background:#fff;border-radius:20px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:16px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border:1px solid #e2e8f0;border-radius:16px;margin:10px 0}
+.badge{display:inline-block;background:#e2e8f0;border-radius:999px;padding:4px 10px;font-size:12px}
+.small{color:#475569;font-size:14px}.due{outline:2px solid #94a3b8}.btn{border:0;border-radius:14px;padding:12px 14px;background:#0f172a;color:#fff;font-weight:600}.btn2{background:#fff;color:#0f172a;border:1px solid #cbd5e1}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}.switch{display:flex;gap:10px;align-items:center}
+</style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
-    <div class="row">
-      <div>
-        <h1 style="font-size:28px">Checklist traitement yeux</h1>
-        <p class="muted mt8">Heure actuelle : <span id="now"></span></p>
-        <p class="muted mt8">Planning actif : <span id="planType"></span></p>
-      </div>
-      <div class="badge"><span id="progress">0</span>% fait</div>
-    </div>
-
-    <div class="hint mt16">
-      <div style="font-weight:700">À faire maintenant</div>
-      <div id="dueBox" class="mt8 small muted">Aucun rappel immédiat.</div>
-    </div>
-
-    <div class="stack mt16">
-      <button id="notifBtn" class="btn">Activer les rappels sonores et notifications</button>
-      <div class="toggle">
-        <div>
-          <div style="font-weight:700">Mode cure Azyter</div>
-          <div class="small muted">Affiche les rappels Azyter pendant les 3 jours de cure.</div>
-        </div>
-        <div id="azyterSwitch" class="switch"></div>
-      </div>
-      <button id="resetBtn" class="btn secondary">Réinitialiser les cases du jour</button>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="card"><h2>Matin</h2><div id="morning" class="stack mt12"></div></div>
-    <div class="card"><h2>Journée</h2><div id="day" class="stack mt12"></div></div>
-    <div class="card"><h2>Soir</h2><div id="evening" class="stack mt12"></div></div>
-  </div>
+<div class="card">
+<h1 style="margin:0 0 8px">Checklist traitement yeux</h1>
+<div class="small" id="now"></div>
+<div class="small" id="plan"></div>
+<div style="margin-top:12px" id="current"></div>
+<div class="row" style="margin-top:14px">
+<button class="btn" id="notif">Activer les alarmes Android</button>
+<label class="switch"><input type="checkbox" id="azyter"> Cure Azyter active</label>
+<button class="btn btn2" id="reset">Réinitialiser le jour</button>
 </div>
-
+</div>
+<div id="sections"></div>
+</div>
 <script>
-const STORAGE_KEY = 'eye-care-checklist-html-v1';
-const SETTINGS_KEY = 'eye-care-checklist-html-settings-v1';
-const weekdaySchedule = [
-  { id:'0900-vismed', time:'09:00', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'0905-paupieres', time:'09:05', label:'Chaleur + massage + rinçage', detail:'Œil droit', category:'Paupières' },
-  { id:'0915-dacryo', time:'09:15', label:'Dacryoserum', detail:'2 yeux', category:'Nettoyage' },
-  { id:'0920-azyter', time:'09:20', label:'Azyter', detail:'Œil droit · uniquement pendant les cures', category:'Traitement' },
-  { id:'0925-dexa', time:'09:25', label:'Dexafree', detail:'2 yeux', category:'Traitement' },
-  { id:'0935-sterdex', time:'09:35', label:'Sterdex', detail:'Œil droit', category:'Traitement' },
-  { id:'0945-vismed', time:'09:45', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1130-vismed', time:'11:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1300-dacryo', time:'13:00', label:'Dacryoserum', detail:'2 yeux', category:'Nettoyage' },
-  { id:'1305-vismed', time:'13:05', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1530-vismed', time:'15:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1730-vismed', time:'17:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1830-vismed', time:'18:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'2130-paupieres', time:'21:30', label:'Chaleur + massage + rinçage', detail:'Œil droit', category:'Paupières' },
-  { id:'2145-dacryo', time:'21:45', label:'Dacryoserum', detail:'2 yeux', category:'Nettoyage' },
-  { id:'2150-dexa', time:'21:50', label:'Dexafree', detail:'2 yeux', category:'Traitement' },
-  { id:'2200-sterdex', time:'22:00', label:'Sterdex', detail:'Œil droit', category:'Traitement' },
-  { id:'2210-vismed', time:'22:10', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'2310-hydramed', time:'23:10', label:'Hydramed Night', detail:'Œil droit ± gauche', category:'Nuit' },
-];
-const weekendSchedule = [
-  { id:'1000-vismed', time:'10:00', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1005-paupieres', time:'10:05', label:'Chaleur + massage + rinçage', detail:'Œil droit', category:'Paupières' },
-  { id:'1015-dacryo', time:'10:15', label:'Dacryoserum', detail:'2 yeux', category:'Nettoyage' },
-  { id:'1020-azyter', time:'10:20', label:'Azyter', detail:'Œil droit · uniquement pendant les cures', category:'Traitement' },
-  { id:'1025-dexa', time:'10:25', label:'Dexafree', detail:'2 yeux', category:'Traitement' },
-  { id:'1035-sterdex', time:'10:35', label:'Sterdex', detail:'Œil droit', category:'Traitement' },
-  { id:'1045-vismed', time:'10:45', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1230-vismed', time:'12:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1400-dacryo', time:'14:00', label:'Dacryoserum', detail:'2 yeux', category:'Nettoyage' },
-  { id:'1405-vismed', time:'14:05', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1630-vismed', time:'16:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1830-vismed', time:'18:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'1930-vismed', time:'19:30', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'2130-paupieres', time:'21:30', label:'Chaleur + massage + rinçage', detail:'Œil droit', category:'Paupières' },
-  { id:'2145-dacryo', time:'21:45', label:'Dacryoserum', detail:'2 yeux', category:'Nettoyage' },
-  { id:'2150-dexa', time:'21:50', label:'Dexafree', detail:'2 yeux', category:'Traitement' },
-  { id:'2200-sterdex', time:'22:00', label:'Sterdex', detail:'Œil droit', category:'Traitement' },
-  { id:'2210-vismed', time:'22:10', label:'Vismed', detail:'Œil droit', category:'Larmes' },
-  { id:'2310-hydramed', time:'23:10', label:'Hydramed Night', detail:'Œil droit ± gauche', category:'Nuit' },
-];
-function todayKey(){ const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
-function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
-function loadJSON(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch{ return fallback; } }
-let checks = loadJSON(STORAGE_KEY, {});
-let settings = loadJSON(SETTINGS_KEY, {remindersEnabled:false, azyterMode:false});
-let lastNotified = '';
-const audioCtx = window.AudioContext ? new AudioContext() : null;
-function beep(){ if(!audioCtx) return; const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type='sine'; o.frequency.value=880; g.gain.setValueAtTime(.001,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.05,audioCtx.currentTime+.01); g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.28); o.start(); o.stop(audioCtx.currentTime+.3); }
-function getSchedule(now){ const day = now.getDay(); const base = (day===0||day===6)?weekendSchedule:weekdaySchedule; return base.filter(i => settings.azyterMode || i.label !== 'Azyter'); }
+const weekday=[['09:00','Vismed','Œil droit','Larmes'],['09:05','Chaleur + massage + rinçage','Œil droit','Paupières'],['09:15','Dacryoserum','2 yeux','Nettoyage'],['09:20','Azyter','Œil droit · uniquement pendant les cures','Traitement'],['09:25','Dexafree','2 yeux','Traitement'],['09:35','Sterdex','Œil droit','Traitement'],['09:45','Vismed','Œil droit','Larmes'],['11:30','Vismed','Œil droit','Larmes'],['13:00','Dacryoserum','2 yeux','Nettoyage'],['13:05','Vismed','Œil droit','Larmes'],['15:30','Vismed','Œil droit','Larmes'],['17:30','Vismed','Œil droit','Larmes'],['18:30','Vismed','Œil droit','Larmes'],['21:30','Chaleur + massage + rinçage','Œil droit','Paupières'],['21:45','Dacryoserum','2 yeux','Nettoyage'],['21:50','Dexafree','2 yeux','Traitement'],['22:00','Sterdex','Œil droit','Traitement'],['22:10','Vismed','Œil droit','Larmes'],['23:10','Hydramed Night','Œil droit ± gauche','Nuit']];
+const weekend=[['10:00','Vismed','Œil droit','Larmes'],['10:05','Chaleur + massage + rinçage','Œil droit','Paupières'],['10:15','Dacryoserum','2 yeux','Nettoyage'],['10:20','Azyter','Œil droit · uniquement pendant les cures','Traitement'],['10:25','Dexafree','2 yeux','Traitement'],['10:35','Sterdex','Œil droit','Traitement'],['10:45','Vismed','Œil droit','Larmes'],['12:30','Vismed','Œil droit','Larmes'],['14:00','Dacryoserum','2 yeux','Nettoyage'],['14:05','Vismed','Œil droit','Larmes'],['16:30','Vismed','Œil droit','Larmes'],['18:30','Vismed','Œil droit','Larmes'],['19:30','Vismed','Œil droit','Larmes'],['21:30','Chaleur + massage + rinçage','Œil droit','Paupières'],['21:45','Dacryoserum','2 yeux','Nettoyage'],['21:50','Dexafree','2 yeux','Traitement'],['22:00','Sterdex','Œil droit','Traitement'],['22:10','Vismed','Œil droit','Larmes'],['23:10','Hydramed Night','Œil droit ± gauche','Nuit']];
+const k=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const mins=t=>{let[a,b]=t.split(':').map(Number);return a*60+b};
+let settings=JSON.parse(localStorage.getItem('eye-settings')||'{"azyter":false}');
+document.getElementById('azyter').checked=settings.azyter;
+let last='';
+function sched(now=new Date()){
+  const base=([0,6].includes(now.getDay())?weekend:weekday).map((x,i)=>({id:`${x[0]}-${i}`,time:x[0],label:x[1],detail:x[2],cat:x[3]}));
+  return base.filter(x=>settings.azyter||x.label!=='Azyter');
+}
+function checks(){return JSON.parse(localStorage.getItem('eye-checks')||'{}')}
+function setChecks(v){localStorage.setItem('eye-checks',JSON.stringify(v))}
 function render(){
-  const now = new Date();
-  const key = todayKey();
-  if(!checks[key]) checks[key] = {};
-  const current = now.getHours()*60 + now.getMinutes();
-  const schedule = getSchedule(now);
-  document.getElementById('now').textContent = now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('planType').textContent = (now.getDay()===0||now.getDay()===6)?'week-end':'semaine';
-  document.getElementById('azyterSwitch').className = 'switch'+(settings.azyterMode?' on':'');
-  const doneCount = schedule.filter(i => checks[key][i.id]).length;
-  document.getElementById('progress').textContent = Math.round(doneCount / schedule.length * 100);
-  const due = schedule.filter(i => current - toMin(i.time) >=0 && current - toMin(i.time) <=4 && !checks[key][i.id]);
-  const next = schedule.find(i => toMin(i.time) >= current);
-  const dueBox = document.getElementById('dueBox');
-  if(due.length){ dueBox.innerHTML = due.map(i=>`<div><strong>${i.time} · ${i.label}</strong><br><span class="muted">${i.detail}</span></div>`).join('<div style="height:8px"></div>'); }
-  else if(next){ dueBox.innerHTML = `Prochain rappel<br><strong>${next.time} · ${next.label}</strong><br><span class="muted">${next.detail}</span>`; }
-  else { dueBox.textContent = 'Tous les rappels planifiés de la journée sont passés.'; }
-
-  const groups = {
-    morning: schedule.filter(i => toMin(i.time) < 12*60),
-    day: schedule.filter(i => toMin(i.time) >= 12*60 && toMin(i.time) < 20*60),
-    evening: schedule.filter(i => toMin(i.time) >= 20*60),
-  };
-  for (const [id,items] of Object.entries(groups)){
-    const root = document.getElementById(id);
-    root.innerHTML = '';
-    items.forEach(item => {
-      const checked = !!checks[key][item.id];
-      const isDue = due.some(x=>x.id===item.id);
-      const row = document.createElement('label');
-      row.className = 'item'+(checked?' done':'')+(isDue?' due':'');
-      row.innerHTML = `<input class="checkbox" type="checkbox" ${checked?'checked':''}>
-        <div><div class="time">${item.time} · ${item.label}</div><div class="small muted">${item.detail} · ${item.category}</div></div>
-        <div>${checked?'✓':''}</div>`;
-      row.querySelector('input').addEventListener('change', (e)=>{ checks[key][item.id]=e.target.checked; persist(); render();});
-      root.appendChild(row);
+  const now=new Date();
+  const schedule=sched(now); const cks=checks(); const today=cks[k(now)]||{};
+  document.getElementById('now').textContent='Heure actuelle : '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('plan').textContent='Planning actif : '+(([0,6].includes(now.getDay()))?'week-end':'semaine');
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const due=schedule.filter(x=>nowMin-mins(x.time)>=0 && nowMin-mins(x.time)<=4 && !today[x.id]);
+  const next=schedule.find(x=>mins(x.time)>=nowMin);
+  document.getElementById('current').innerHTML=due.length?`<div><b>À faire maintenant</b><div style="margin-top:8px">${due.map(x=>`<div class="item due"><div></div><div><b>${x.time} · ${x.label}</b><div class="small">${x.detail}</div></div><div></div></div>`).join('')}</div></div>`:(next?`<b>Prochain rappel</b><div style="margin-top:8px">${next.time} · ${next.label}<div class="small">${next.detail}</div></div>`:'Tous les rappels du jour sont passés.');
+  const groups={Matin:schedule.filter(x=>mins(x.time)<720),Journée:schedule.filter(x=>mins(x.time)>=720&&mins(x.time)<1200),Soir:schedule.filter(x=>mins(x.time)>=1200)};
+  const sec=document.getElementById('sections'); sec.innerHTML='';
+  Object.entries(groups).forEach(([name,items])=>{
+    const done=items.filter(x=>today[x.id]).length;
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`<h2 style="margin:0 0 8px">${name}</h2><div class="small">${done}/${items.length} faits</div>`;
+    items.forEach(item=>{
+      const checked=!!today[item.id];
+      const div=document.createElement('div'); div.className='item'+(due.some(d=>d.id===item.id)?' due':'');
+      div.innerHTML=`<input type="checkbox" ${checked?'checked':''}><div><b>${item.time} · ${item.label}</b> <span class="badge">${item.detail}</span><div class="small">${item.cat}</div></div><div>${checked?'✅':''}</div>`;
+      div.querySelector('input').addEventListener('change',e=>{const all=checks();all[k(new Date())]=all[k(new Date())]||{};all[k(new Date())][item.id]=e.target.checked;setChecks(all);render();});
+      card.appendChild(div);
     });
-  }
-
-  if(settings.remindersEnabled && Notification.permission === 'granted' && due.length){
-    const sig = `${key}-${due.map(x=>x.id).join(',')}`;
-    if(sig !== lastNotified){
-      lastNotified = sig;
-      new Notification('Traitement à faire', { body: due.map(i => `${i.time} · ${i.label} (${i.detail})`).join('\n') });
-      beep();
-    }
+    sec.appendChild(card);
+  });
+  if(Notification && Notification.permission==='granted' && due.length){
+    const sig=k(now)+'-'+due.map(x=>x.id).join(',');
+    if(sig!==last){last=sig;new Notification('Traitement à faire',{body:due.map(x=>`${x.time} · ${x.label} (${x.detail})`).join('\n')});}
   }
 }
-function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(checks)); localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-document.getElementById('notifBtn').onclick = async () => {
-  if('Notification' in window){
-    const p = await Notification.requestPermission();
-    settings.remindersEnabled = p === 'granted';
-    persist(); render();
-  } else alert('Les notifications ne sont pas prises en charge sur cet appareil.');
-};
-document.getElementById('azyterSwitch').onclick = () => { settings.azyterMode = !settings.azyterMode; persist(); render(); };
-document.getElementById('resetBtn').onclick = () => { checks[todayKey()] = {}; persist(); render(); };
-render(); setInterval(render, 15000);
+document.getElementById('notif').onclick=async()=>{if(window.AndroidApp&&AndroidApp.enableNativeReminders){AndroidApp.enableNativeReminders();alert('Alarmes Android activées. Pense à autoriser les notifications et à accepter le mode batterie non restreint si Android le propose.');}else if('Notification'in window){await Notification.requestPermission();render();}};
+document.getElementById('azyter').onchange=e=>{settings.azyter=e.target.checked;localStorage.setItem('eye-settings',JSON.stringify(settings));if(window.AndroidApp&&AndroidApp.setAzyterMode){AndroidApp.setAzyterMode(e.target.checked);}render();};
+document.getElementById('reset').onclick=()=>{const all=checks();all[k(new Date())]={};setChecks(all);render();};
+setInterval(render,15000); render();
 </script>
 </body>
 </html>
